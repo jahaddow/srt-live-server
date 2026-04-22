@@ -382,6 +382,7 @@ json CSLSManager::generate_json_for_consumers(std::string playerKey) {
         row["connection_id"] = conn.connection_id;
         row["endpoint"] = conn.endpoint;
         row["bitrate"] = conn.bitrate;
+        row["mbps_recv_rate"] = conn.mbps_recv_rate;
         row["rtt"] = conn.rtt;
         row["latency"] = conn.latency;
         row["buffer"] = conn.buffer;
@@ -583,5 +584,4 @@ int  CSLSManager::stat_client_callback(void *p, HTTP_CALLBACK_TYPE type, void *v
 	}
 	return SLS_OK;
 }
-
 

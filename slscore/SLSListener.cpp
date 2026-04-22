@@ -466,8 +466,8 @@ int CSLSListener::handler()
         if (NULL == pub) {
         	//*
         	//3.1 check pullers
-        	if (NULL == m_map_puller) {
-    			sls_log(SLS_LOG_INFO, "[%p]CSLSListener::handler, refused, new role[%s:%d], stream='%s', publisher is NULL and m_map_puller is NULL.",
+    		if (NULL == m_map_puller) {
+    			sls_log(SLS_LOG_DEBUG, "[%p]CSLSListener::handler, refused, new role[%s:%d], stream='%s', publisher is NULL and m_map_puller is NULL.",
     						this, peer_name, peer_port, key_stream_name);
     			srt->libsrt_close();
     			delete srt;
@@ -475,7 +475,7 @@ int CSLSListener::handler()
         	}
         	CSLSRelayManager *puller_manager = m_map_puller->add_relay_manager(key_stream_name, stream_name);
         	if (NULL == puller_manager) {
-    			sls_log(SLS_LOG_INFO, "[%p]CSLSListener::handler, m_map_puller->add_relay_manager failed, new role[%s:%d], stream='%s', publisher is NULL, no puller_manager.",
+    			sls_log(SLS_LOG_DEBUG, "[%p]CSLSListener::handler, m_map_puller->add_relay_manager failed, new role[%s:%d], stream='%s', publisher is NULL, no puller_manager.",
     						this, peer_name, peer_port, key_stream_name);
     			srt->libsrt_close();
     			delete srt;
@@ -610,7 +610,7 @@ int CSLSListener::handler()
         }
         CSLSRelayManager *pusher_manager = m_map_pusher->add_relay_manager(key_stream_name, stream_name);
         if (NULL == pusher_manager) {
-            sls_log(SLS_LOG_INFO, "[%p]CSLSListener::handler, m_map_pusher->add_relay_manager failed, new role[%s:%d], key_stream_name=%s.",
+            sls_log(SLS_LOG_DEBUG, "[%p]CSLSListener::handler, m_map_pusher->add_relay_manager failed, new role[%s:%d], key_stream_name=%s.",
                         this, peer_name, peer_port, key_stream_name);
             return client_count;
         }
@@ -639,4 +639,3 @@ std::string   CSLSListener::get_stat_info()
 	}
 	return m_stat_info;
 }
-

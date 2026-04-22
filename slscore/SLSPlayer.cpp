@@ -140,6 +140,7 @@ std::vector<CSLSPlayer::ConsumerSnapshot> CSLSPlayer::get_active_consumers(const
         memset(&stats, 0, sizeof(stats));
         player->get_statistics(&stats, 0);
         s.bitrate = player->get_bitrate();
+        s.mbps_recv_rate = stats.mbpsRecvRate;
         s.rtt = stats.msRTT;
         s.latency = player->get_latency();
         s.buffer = stats.msRcvBuf;
@@ -151,4 +152,3 @@ std::vector<CSLSPlayer::ConsumerSnapshot> CSLSPlayer::get_active_consumers(const
 
     return snapshots;
 }
-

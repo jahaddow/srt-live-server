@@ -43,6 +43,7 @@ public :
         std::string connection_id;
         std::string endpoint;
         int bitrate = 0;
+        double mbps_recv_rate = 0.0;
         int rtt = 0;
         int latency = 0;
         int buffer = 0;
