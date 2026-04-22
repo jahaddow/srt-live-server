@@ -537,7 +537,7 @@ int CSLSListener::handler()
 	    player->set_stat_info_base(stat_info);
 	    player->set_http_url(m_http_url_role);
 	    player->on_connect();
-	    CSLSPlayer::register_active(player, std::string(key_stream_name));
+	    CSLSPlayer::register_active(player, std::string(sid));
 
 		m_list_role->push(player);
 		sls_log(SLS_LOG_INFO, "[%p]CSLSListener::handler, new player[%p]=[%s:%d], key_stream_name=%s, %s=%p, m_list_role->size=%d.",
@@ -639,5 +639,4 @@ std::string   CSLSListener::get_stat_info()
 	}
 	return m_stat_info;
 }
-
 
