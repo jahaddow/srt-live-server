@@ -27,6 +27,8 @@
 #define _SLSPlayer_INCLUDE_
 
 #include "SLSRole.hpp"
+#include <string>
+#include <vector>
 
 /**
  * CSLSPlayer
@@ -37,9 +39,27 @@ public :
 	CSLSPlayer();
 	~CSLSPlayer();
 
+    struct ConsumerSnapshot {
+        std::string connection_id;
+        std::string endpoint;
+        int bitrate = 0;
+        int rtt = 0;
+        int latency = 0;
+        int buffer = 0;
+        int dropped_pkts = 0;
+        int uptime = 0;
+        std::string state;
+    };
+
     virtual int handler();
+    virtual int uninit() override;
+
+    static void register_active(CSLSPlayer *player, const std::string &player_key);
+    static void unregister_active(CSLSPlayer *player);
+    static std::vector<ConsumerSnapshot> get_active_consumers(const std::string &player_key);
 
 private:
+    std::string m_registered_player_key;
 
 
 };

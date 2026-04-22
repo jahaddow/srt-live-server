@@ -38,6 +38,7 @@
 #include "SLSPusherManager.hpp"
 #include "SLSMapPublisher.hpp"
 #include "SLSDatabase.hpp"
+#include "SLSPlayer.hpp"
 
 using json = nlohmann::json;
 
@@ -311,6 +312,88 @@ json CSLSManager::generate_json_for_publisher(std::string playerKey, int clear, 
     return ret;
 }
 
+json CSLSManager::generate_json_for_publisher_key(std::string publisherKey, int clear, bool legacy) {
+    json ret;
+    ret["status"] = "error";
+
+    if (publisherKey.empty()) {
+        ret["message"] = "Publisher key is required";
+        return ret;
+    }
+
+    if (!CSLSDatabase::getInstance().validateStreamId(publisherKey.c_str(), true, nullptr)) {
+        ret["message"] = "Invalid publisher key";
+        return ret;
+    }
+
+    if (legacy) {
+        ret["publishers"] = json::object();
+    }
+    ret["status"] = "ok";
+
+    CSLSRole *role = nullptr;
+    for (int i = 0; i < m_server_count; i++) {
+        CSLSMapPublisher *publisher_map = &m_map_publisher[i];
+        role = publisher_map->get_publisher(publisherKey.c_str());
+        if (role != nullptr) {
+            break;
+        }
+    }
+
+    if (role == nullptr) {
+        ret["message"] = "Publisher is currently not streaming";
+        return ret;
+    }
+
+    if (legacy) {
+        ret["publishers"]["live"] = create_legacy_json_stats_for_publisher(role, clear);
+    } else {
+        ret["publisher"] = create_json_stats_for_publisher(role, clear);
+    }
+    ret.erase("message");
+    return ret;
+}
+
+json CSLSManager::generate_json_for_consumers(std::string playerKey) {
+    json ret;
+    ret["status"] = "error";
+
+    if (playerKey.empty()) {
+        ret["message"] = "Player key is required";
+        return ret;
+    }
+
+    char mapped_publisher[URL_MAX_LEN] = {0};
+    if (!CSLSDatabase::getInstance().validateStreamId(playerKey.c_str(), false, mapped_publisher)) {
+        ret["message"] = "Invalid player key";
+        return ret;
+    }
+
+    ret["status"] = "ok";
+    ret["player_key"] = playerKey;
+    ret["publisher_key"] = std::string(mapped_publisher);
+
+    auto consumers = CSLSPlayer::get_active_consumers(playerKey);
+    ret["consumer_count"] = static_cast<int>(consumers.size());
+    ret["consumers"] = json::array();
+
+    for (const auto &conn : consumers) {
+        json row;
+        row["connection_id"] = conn.connection_id;
+        row["endpoint"] = conn.endpoint;
+        row["bitrate"] = conn.bitrate;
+        row["rtt"] = conn.rtt;
+        row["latency"] = conn.latency;
+        row["buffer"] = conn.buffer;
+        row["dropped_pkts"] = conn.dropped_pkts;
+        row["uptime"] = conn.uptime;
+        row["state"] = conn.state;
+        ret["consumers"].push_back(row);
+    }
+
+    return ret;
+}
+
 json CSLSManager::create_legacy_json_stats_for_publisher(CSLSRole *role, int clear) {
     json ret = json::object();
     SRT_TRACEBSTATS stats;
@@ -500,6 +583,5 @@ int  CSLSManager::stat_client_callback(void *p, HTTP_CALLBACK_TYPE type, void *v
 	}
 	return SLS_OK;
 }
-
 
 

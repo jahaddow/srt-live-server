@@ -119,14 +119,14 @@ Authorization: Bearer <API_KEY>
 
 #### Get Publisher Statistics
 
-Get real-time statistics for a specific publisher (using player ID).
+Get real-time statistics for a specific publisher key.
 
 **Note: This endpoint does not require authentication.**
 
-**Endpoint:** `GET /stats/{player_id}`
+**Endpoint:** `GET /stats/publisher/{publisher_key}`
 
 **Parameters:**
-- `player_id` (path) - The player ID associated with the publisher
+- `publisher_key` (path) - The publisher stream key
 - `reset` (query, optional) - Reset statistics after retrieval
 - `legacy` (query, optional) - Use legacy format with detailed information (set to "1")
 
@@ -170,6 +170,37 @@ Get real-time statistics for a specific publisher (using player ID).
 ```
 </details>
 
+#### Get Consumer Statistics by Player Key
+
+Get active consumer connections for a player key.
+
+**Note: This endpoint does not require authentication.**
+
+**Endpoint:** `GET /stats/consumers/{player_key}`
+
+**Response:**
+```json
+{
+  "status": "ok",
+  "player_key": "live_stream",
+  "publisher_key": "studio_1",
+  "consumer_count": 2,
+  "consumers": [
+    {
+      "connection_id": "42",
+      "endpoint": "203.0.113.20:51002",
+      "bitrate": 2400,
+      "rtt": 44,
+      "latency": 120,
+      "buffer": 120,
+      "dropped_pkts": 0,
+      "uptime": 53,
+      "state": "connected"
+    }
+  ]
+}
+```
+
 ### API Key Management
 
 #### Create New API Key
@@ -210,7 +241,8 @@ The API implements rate limiting to prevent abuse. Each endpoint type has its ow
   - POST /api/stream-ids
   - DELETE /api/stream-ids/{player_id}
 - **Statistics** (`stats`): 300 requests per minute per IP (configurable via `rate_limit_stats`)
-  - GET /stats/{player_id}
+  - GET /stats/publisher/{publisher_key}
+  - GET /stats/consumers/{player_key}
 - **Configuration** (`config`): 20 requests per minute per IP (configurable via `rate_limit_config`)
   - POST /api/keys
 
@@ -316,9 +348,11 @@ curl -X POST -H "Authorization: Bearer YOUR_API_KEY" \
   -d '{"publisher":"studio_1","player":"live_stream"}' \
   http://hostname:8080/api/stream-ids
 
-# Get statistics
-curl -H "Authorization: Bearer YOUR_API_KEY" \
-  http://hostname:8080/stats/live_stream
+# Get publisher statistics
+curl http://hostname:8080/stats/publisher/studio_1
+
+# Get consumer statistics for a player key
+curl http://hostname:8080/stats/consumers/live_stream
 ```
 
 ### Python

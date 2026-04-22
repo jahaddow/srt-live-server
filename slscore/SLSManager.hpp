@@ -98,6 +98,8 @@ public :
 	int          check_invalid();
 
 	json generate_json_for_publisher(std::string publisherName, int clear, bool legacy = false);
+	json generate_json_for_publisher_key(std::string publisherName, int clear, bool legacy = false);
+	json generate_json_for_consumers(std::string playerKey);
 	json create_legacy_json_stats_for_publisher(CSLSRole *role, int clear);
 	json create_json_stats_for_publisher(CSLSRole *role, int clear);
 	char* find_publisher_by_player_key(char *player_key);

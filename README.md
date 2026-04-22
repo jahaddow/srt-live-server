@@ -65,9 +65,14 @@ curl -H "Authorization: Bearer YOUR_API_KEY" \
   http://hostname:8080/api/stream-ids
 ```
 
-3. **Get stream statistics**:
+3. **Get publisher statistics**:
 ```bash
-curl http://hostname:8080/stats/live
+curl http://hostname:8080/stats/publisher/studio
+```
+
+4. **Get consumer connection statistics for a player key**:
+```bash
+curl http://hostname:8080/stats/consumers/live
 ```
 
 ## Streaming URLs

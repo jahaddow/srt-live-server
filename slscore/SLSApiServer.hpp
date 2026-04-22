@@ -84,6 +84,8 @@ private:
     void handleStreamIdsPost(const httplib::Request& req, httplib::Response& res);
     void handleStreamIdsDelete(const httplib::Request& req, httplib::Response& res);
     void handleStats(const httplib::Request& req, httplib::Response& res);
+    void handlePublisherStats(const httplib::Request& req, httplib::Response& res);
+    void handleConsumerStats(const httplib::Request& req, httplib::Response& res);
     void handleConfig(const httplib::Request& req, httplib::Response& res);
     void handleApiKeys(const httplib::Request& req, httplib::Response& res);
 };

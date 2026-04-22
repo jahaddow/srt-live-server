@@ -167,7 +167,16 @@ void CSLSApiServer::setupEndpoints() {
         handleStreamIdsDelete(req, res);
     });
     
-    // Statistics endpoint
+    // Canonical statistics endpoints
+    m_server.Get(R"(/stats/publisher/(.+))", [this](const httplib::Request& req, httplib::Response& res) {
+        handlePublisherStats(req, res);
+    });
+
+    m_server.Get(R"(/stats/consumers/(.+))", [this](const httplib::Request& req, httplib::Response& res) {
+        handleConsumerStats(req, res);
+    });
+
+    // Deprecated endpoint
     m_server.Get(R"(/stats/(.+))", [this](const httplib::Request& req, httplib::Response& res) {
         handleStats(req, res);
     });
@@ -347,8 +356,16 @@ void CSLSApiServer::handleStreamIdsDelete(const httplib::Request& req, httplib::
 
 void CSLSApiServer::handleStats(const httplib::Request& req, httplib::Response& res) {
     setCorsHeaders(res);
-    
-    // Rate limiting (but no authentication required for stats)
+    json ret;
+    ret["status"] = "error";
+    ret["message"] = "Deprecated endpoint. Use /stats/publisher/{publisher_key} or /stats/consumers/{player_key}";
+    res.status = 404;
+    res.set_content(ret.dump(), "application/json");
+}
+
+void CSLSApiServer::handlePublisherStats(const httplib::Request& req, httplib::Response& res) {
+    setCorsHeaders(res);
+
     if (!checkRateLimit(req.remote_addr, "stats")) {
         res.status = 429;
         json error;
@@ -357,9 +374,8 @@ void CSLSApiServer::handleStats(const httplib::Request& req, httplib::Response& 
         res.set_content(error.dump(), "application/json");
         return;
     }
-    
-    json ret;
 
+    json ret;
     if (!m_sls_manager) {
         ret["status"] = "error";
         ret["message"] = "sls manager not found";
@@ -368,12 +384,38 @@ void CSLSApiServer::handleStats(const httplib::Request& req, httplib::Response& 
         return;
     }
 
-    // Check if legacy format is requested
     bool legacy_format = req.has_param("legacy") && req.get_param_value("legacy") == "1";
-    
-    // Use the updated method with legacy parameter
-    ret = m_sls_manager->generate_json_for_publisher(req.matches[1], req.has_param("reset") ? 1 : 0, legacy_format);
+    ret = m_sls_manager->generate_json_for_publisher_key(req.matches[1], req.has_param("reset") ? 1 : 0, legacy_format);
 
+    if (ret["status"] == "error") {
+        res.status = 404;
+    }
+
+    res.set_content(ret.dump(), "application/json");
+}
+
+void CSLSApiServer::handleConsumerStats(const httplib::Request& req, httplib::Response& res) {
+    setCorsHeaders(res);
+
+    if (!checkRateLimit(req.remote_addr, "stats")) {
+        res.status = 429;
+        json error;
+        error["status"] = "error";
+        error["message"] = "Rate limit exceeded";
+        res.set_content(error.dump(), "application/json");
+        return;
+    }
+
+    json ret;
+    if (!m_sls_manager) {
+        ret["status"] = "error";
+        ret["message"] = "sls manager not found";
+        res.status = 500;
+        res.set_content(ret.dump(), "application/json");
+        return;
+    }
+
+    ret = m_sls_manager->generate_json_for_consumers(req.matches[1]);
     if (ret["status"] == "error") {
         res.status = 404;
     }
